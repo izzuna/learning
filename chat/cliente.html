@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Aplicación CHAT de Node.js</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script> 
+    <style>
+    #seccionPrincipal{
+        display: none;
+    }
+    #seccionChat{
+        float: left;
+        padding: 10px;
+    }
+    #ventanaChat{
+        height:400px;
+    }
+    #seccionUsuarios{
+        float: left;
+        padding: 10px;
+        margin-left: 5px;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+       <h2>CHAT ROOM</h2>
+        <div id="seccionUsuario" class="jumbotron">
+            <p>Escriba un nombre de usuario:</p>
+            <div id="error" class="alert alert-warning" style="display:none"></div>
+            <form id="formularioUsuario">
+                <div class="input-group">
+                    <input type="text" id="usuario" class="form-control" placeholder="Nombre del Usuario">
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="submit">Enviar</button>
+                    </span>
+                </div>
+            </form>
+        </div>
+        <div id="seccionPrincipal">
+            <div id="seccionChat" class="jumbotron col-sm-10">
+                <div id="ventanaChat"></div>
+                <form id="formularioChat">
+                    <div class="input-group">
+                        <input type="text" id="mensaje" class="form-control">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button">Enviar</button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <div id="seccionUsuarios" class="jumbotron">
+                <h4>Usuarios</h4>
+                <div id="listaUsuarios"></div>
+            </div>
+        </div>
+
+    </div>
+   
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    $(function() {
+        var socket = io.connect()
+        var formularioUsuario = $('#formularioUsuario')
+        var formularioChat = $('#formularioChat')
+        var usuario = $('#usuario')
+        var listaUsuarios = $('#listaUsuarios')
+        var mensaje = $('#mensaje')
+        var chat = $('#ventanaChat')
+
+        formularioUsuario.submit(function(evento) {
+            evento.preventDefault()
+            socket.emit('nuevo usuario', usuario.val(), function(data) {
+                if(data) {
+                    $('#error').hide()
+                    $('#seccionUsuario').hide()
+                    $('#seccionPrincipal').show()
+                }else{
+                    $('#error').html('El nombre del usuario ya existe')
+                    $('#error').show()
+                }
+            })
+            usuario.val('')
+            socket.on('actualizarUsuarios', function(usuarios){
+            var html = ''
+            usuarios.forEach(function(usuario) {
+                html += usuario + '<br />'
+                })
+                listaUsuarios.html(html)
+            })
+            formularioChat.submit(function(evento){
+                evento.preventDefault()
+                socket.emit('nuevo mensaje', mensaje.val())
+                mensaje.val('')
+            })
+            socket.on('mensaje', function(data){
+                chat.append(`<strong> ${data.usuario} </strong> - ${data.mensaje} <br />`)
+            })
+        })
+
+    })
+    </script>
+</body>
+</html>
