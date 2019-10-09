@@ -1,12 +1,12 @@
-var express= require('express');
+var express= require('express')
 
-var app = express();
+var app = express()
 
 app.get('/', function (req,res){
-    res.send('Hola mundo!');
+    res.sendFile(__dirname + '/index.html')
 })
 
 app.listen(3000, function(err){
-    if (err) return console.log('Hubo un error'), process.exit(1);
-    console.log('platzigram escuchando en el puerto 3000');
+    if (err) return console.log('Hubo un error'), process.exit(1)
+    console.log('platzigram escuchando en el puerto 3000')
 })
